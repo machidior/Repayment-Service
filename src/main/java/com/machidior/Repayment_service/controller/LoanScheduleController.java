@@ -5,10 +5,7 @@ import com.machidior.Repayment_service.model.LoanSchedule;
 import com.machidior.Repayment_service.service.LoanScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,5 +29,11 @@ public class LoanScheduleController {
     @GetMapping("/product-type/{productType}")
     public ResponseEntity<List<LoanSchedule>> getLoanSchedulesByProductType(@PathVariable LoanProductType productType){
         return ResponseEntity.ok(service.getLoanScheduleByProductType(productType));
+    }
+
+    @DeleteMapping("/delete-schedule/{id}")
+    public ResponseEntity<?> deleteSchedule(@PathVariable Long id){
+        service.deleteLoanSchedule(id);
+        return ResponseEntity.ok().body("Schedule deleted successfully!");
     }
 }

@@ -52,4 +52,11 @@ public class LoanScheduleService {
     public List<LoanSchedule> getLoanScheduleByProductType(LoanProductType productType){
         return repository.findByProductType(productType);
     }
+
+    public void deleteLoanSchedule(Long id){
+        LoanSchedule schedule = repository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException("Loan schedule not found!"));
+
+        repository.deleteById(schedule.getId());
+    }
 }

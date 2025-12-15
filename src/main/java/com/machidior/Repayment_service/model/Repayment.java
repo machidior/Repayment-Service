@@ -23,19 +23,24 @@ public class Repayment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Version
+    private Long version;
     private String loanId;
     private String customerId;
+    private Long installmentId;
     private BigDecimal amountPaid;
-    @Enumerated(EnumType.STRING)
-    private Currency currency;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentChannel;
     private String referenceNumber;
     private LocalDate paymentDate;
-    private String receivedByUserId;
+    private String receivedAccountNumber;
     @Enumerated(EnumType.STRING)
     private RepaymentStatus status;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private RepaymentApplication repaymentApplication;
 }

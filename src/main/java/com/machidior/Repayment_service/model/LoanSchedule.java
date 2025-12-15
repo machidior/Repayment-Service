@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "loan_schedules")
@@ -34,4 +35,7 @@ public class LoanSchedule {
     private Integer paidInstallments;
     @Enumerated(EnumType.STRING)
     private LoanScheduleStatus status;
+
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
+    private List<Installment> installments;
 }

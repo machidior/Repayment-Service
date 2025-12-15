@@ -2,12 +2,14 @@ package com.machidior.Repayment_service.generator;
 
 import com.machidior.Repayment_service.dtos.InstallmentRequest;
 import com.machidior.Repayment_service.enums.InstallmentFrequency;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class RepaymentScheduleGenerator {
 
     public List<InstallmentRequest> generateFlatSchedule(

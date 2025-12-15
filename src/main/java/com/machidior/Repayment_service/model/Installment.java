@@ -1,5 +1,6 @@
 package com.machidior.Repayment_service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.machidior.Repayment_service.enums.InstallmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,7 +20,9 @@ public class Installment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long scheduleId;
+
+    @Version
+    private Long version;
     private Integer installmentNumber;
     private LocalDate dueDate;
     private BigDecimal principalDue;
@@ -37,4 +40,9 @@ public class Installment {
     private BigDecimal penaltyPaid;
     @Enumerated(EnumType.STRING)
     private InstallmentStatus status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_id", referencedColumnName = "id")
+    @JsonIgnore
+    private LoanSchedule schedule;
 }
