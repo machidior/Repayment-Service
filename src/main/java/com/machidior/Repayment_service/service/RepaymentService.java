@@ -39,7 +39,7 @@ public class RepaymentService {
 
         Installment installment = installmentRepository.findById(installmentId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Installment with id " + installmentId + " not found"));
+                        "Installment with id "+ installmentId +" is not found"));
 
         BigDecimal amountPaid = repaymentRequest.getAmountPaid();
 

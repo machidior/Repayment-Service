@@ -16,4 +16,6 @@ public interface InstallmentRepository extends JpaRepository<Installment,Long> {
             Long scheduleId,
             List<InstallmentStatus> statuses
     );
+
+    List<Installment> findByStatusAndDueDateBefore(InstallmentStatus installmentStatus, LocalDate date);
 }
