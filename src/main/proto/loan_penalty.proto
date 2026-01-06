@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.machidior.grpc.loanconfig";
+option java_outer_classname = "LoanPenaltyProto";
+
+service LoanPenaltyService {
+  rpc GetPenaltyPolicy (PenaltyPolicyRequest)
+      returns (PenaltyPolicyResponse);
+}
+
+message PenaltyPolicyRequest {
+  LoanProductType productType = 1;
+}
+
+message PenaltyPolicyResponse {
+  LoanProductType productType = 1;
+  double latePenaltyRate = 2;
+  int32 gracePeriodDays = 3;
+  PenaltyCalculationType calculationType = 4;
+}
+
+enum PenaltyCalculationType {
+  DAILY = 0;
+  FIXED = 1;
+  COMPOUND = 2;
+}
+
+enum LoanProductType {
+  BUSINESS_PRODUCT = 0;
+  SALARY_PRODUCT = 1;
+  KUZA_CAPITAL = 2;
+  STAFF_PRODUCT = 3;
+}

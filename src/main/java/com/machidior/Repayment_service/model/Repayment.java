@@ -6,6 +6,7 @@ import com.machidior.Repayment_service.enums.RepaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,7 +39,7 @@ public class Repayment {
     @Enumerated(EnumType.STRING)
     private RepaymentStatus status;
 
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime createdAt;
 
     @OneToOne(cascade = CascadeType.ALL)

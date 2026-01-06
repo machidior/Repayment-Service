@@ -1,5 +1,6 @@
 package com.machidior.Repayment_service.exceptions;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -29,5 +30,19 @@ public class GlobalExceptionHandler {
                 "RESOURCE NOT FOUND"
         );
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+
+    @ExceptionHandler(InvalidStatusTransitionException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidStatusTransitionException(
+            InvalidStatusTransitionException e,
+            WebRequest webRequest
+    ){
+        ExceptionResponse response = new ExceptionResponse(
+                e.getMessage(),
+                webRequest.getDescription(false),
+                "INVALID STATUS TRANSITION"
+        );
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 }

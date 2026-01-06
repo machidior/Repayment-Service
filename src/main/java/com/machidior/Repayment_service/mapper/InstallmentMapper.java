@@ -1,10 +1,13 @@
 package com.machidior.Repayment_service.mapper;
 
 import com.machidior.Repayment_service.dtos.InstallmentRequest;
+import com.machidior.Repayment_service.enums.InstallmentPenaltyStatus;
 import com.machidior.Repayment_service.enums.InstallmentStatus;
 import com.machidior.Repayment_service.model.Installment;
 import com.machidior.Repayment_service.model.LoanSchedule;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 
 @Component
 public class InstallmentMapper {
@@ -19,13 +22,14 @@ public class InstallmentMapper {
                 .loanFeeDue(request.getLoanFeeDue())
                 .remainingBalance(request.getRemainingBalance())
                 .schedule(schedule)
-                .principalPaid(null)
-                .interestPaid(null)
-                .loanFeePaid(null)
-                .totalPaid(null)
-                .penaltyAccrued(null)
-                .penaltyPaid(null)
+                .principalPaid(BigDecimal.ZERO)
+                .interestPaid(BigDecimal.ZERO)
+                .loanFeePaid(BigDecimal.ZERO)
+                .totalPaid(BigDecimal.ZERO)
+                .penaltyAccrued(BigDecimal.ZERO)
+                .penaltyPaid(BigDecimal.ZERO)
                 .status(InstallmentStatus.PENDING)
+                .penaltyStatus(InstallmentPenaltyStatus.INACTIVE)
                 .build();
     }
 }

@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -27,6 +28,6 @@ public class RepaymentApplication {
     private BigDecimal penaltyApplied;
     private BigDecimal totalApplied;
     private BigDecimal excessAmount;
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime appliedTimestamp;
 }

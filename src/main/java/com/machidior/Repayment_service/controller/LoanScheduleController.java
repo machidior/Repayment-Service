@@ -36,4 +36,19 @@ public class LoanScheduleController {
         service.deleteLoanSchedule(id);
         return ResponseEntity.ok().body("Schedule deleted successfully!");
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<LoanSchedule>> getAllSchedules() {
+        return ResponseEntity.ok(service.getAllSchedules());
+    }
+
+    @GetMapping("/inactivate-installment-penalty/{id}")
+    public ResponseEntity<LoanSchedule> inactivateInstallmentPenalty(@PathVariable Long id) {
+        return ResponseEntity.ok(service.setInstallmentsPenaltyInactive(id));
+    }
+
+    @GetMapping("/enable-penalty/{id}")
+    public ResponseEntity<LoanSchedule> enablePenalty(@PathVariable Long id) {
+        return ResponseEntity.ok(service.enablePenalty(id));
+    }
 }

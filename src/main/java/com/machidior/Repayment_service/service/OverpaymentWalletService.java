@@ -45,4 +45,6 @@ public class OverpaymentWalletService {
         return repository.findByLoanId(loanId)
                 .orElseThrow(()->new ResourceNotFoundException("No wallet for the given loan id"));
     }
+
+    //TODO: Allow withdrawal/ Refund.
 }

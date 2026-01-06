@@ -1,13 +1,19 @@
 package com.machidior.Repayment_service.controller;
 
+import com.google.protobuf.Descriptors;
+import com.machidior.Repayment_service.dtos.PenaltyPolicy;
 import com.machidior.Repayment_service.dtos.RepaymentRequest;
+import com.machidior.Repayment_service.dtos.ReversalRequest;
 import com.machidior.Repayment_service.model.Repayment;
 import com.machidior.Repayment_service.service.RepaymentService;
+import com.machidior.grpc.loanconfig.LoanProductType;
+import com.machidior.grpc.loanconfig.PenaltyPolicyResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/repayments")
@@ -27,9 +33,9 @@ public class RepaymentController {
         return ResponseEntity.ok(repaymentService.getAllRepayments());
     }
 
-    @GetMapping("/reverse/{repaymentId}")
-    public ResponseEntity<?> reverseRepayment(@PathVariable Long repaymentId){
-        repaymentService.reverseRepayment(repaymentId);
+    @PostMapping("/reverse/{repaymentId}")
+    public ResponseEntity<String> reverseRepayment(@PathVariable Long repaymentId, @RequestBody ReversalRequest request){
+        repaymentService.reverseRepayment(repaymentId, request);
         return ResponseEntity.ok().body("Repayment reversed successfully!");
     }
 
@@ -38,4 +44,8 @@ public class RepaymentController {
         repaymentService.deleteRepayment(id);
         return ResponseEntity.ok().body("Repayment deleted successfully!");
     }
+
+
 }
+
+

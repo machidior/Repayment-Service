@@ -1,30 +1,35 @@
 package com.machidior.Repayment_service.service;
 
+import com.google.protobuf.Descriptors;
 import com.machidior.Repayment_service.dtos.RepaymentRequest;
+import com.machidior.Repayment_service.dtos.ReversalRequest;
 import com.machidior.Repayment_service.enums.InstallmentStatus;
 import com.machidior.Repayment_service.enums.RepaymentStatus;
+import com.machidior.Repayment_service.enums.ReversalStatus;
+import com.machidior.Repayment_service.exceptions.AlreadyReversedException;
 import com.machidior.Repayment_service.exceptions.ResourceNotFoundException;
 import com.machidior.Repayment_service.kafka.RepaymentAppliedEvent;
 import com.machidior.Repayment_service.mapper.RepaymentMapper;
-import com.machidior.Repayment_service.model.Installment;
-import com.machidior.Repayment_service.model.LoanSchedule;
-import com.machidior.Repayment_service.model.Repayment;
-import com.machidior.Repayment_service.model.RepaymentApplication;
-import com.machidior.Repayment_service.repo.InstallmentRepository;
-import com.machidior.Repayment_service.repo.LoanScheduleRepository;
-import com.machidior.Repayment_service.repo.RepaymentRepository;
+import com.machidior.Repayment_service.model.*;
+import com.machidior.Repayment_service.repo.*;
+import com.machidior.grpc.loanconfig.*;
+import jakarta.persistence.Converter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
+//Never delete repayments -> reverse instead.
 public class RepaymentService {
 
     private final RepaymentRepository repository;
@@ -33,6 +38,10 @@ public class RepaymentService {
     private final RepaymentMapper repaymentMapper;
     private final OverpaymentWalletService overpaymentWalletService;
     private final ApplicationEventPublisher eventPublisher;
+    private final OverpaymentWalletRepository overpaymentWalletRepository;
+    private final ReversalRepository reversalRepository;
+
+
 
     @Transactional
     public void applyRepayment(Long installmentId, RepaymentRequest repaymentRequest) {
@@ -152,6 +161,7 @@ public class RepaymentService {
         return value.compareTo(BigDecimal.ZERO)<0?BigDecimal.ZERO:value;
     }
 
+    //TODO: This method shall be allowed by manager to allow auto-apply to next installment.
     @Transactional
     public void autoApplyOverpayment(
             Long scheduleId,
@@ -235,17 +245,25 @@ public class RepaymentService {
     }
 
     @Transactional
-    public void reverseRepayment(Long repaymentId) {
+    public void reverseRepayment(Long repaymentId, ReversalRequest request) {
         Repayment repayment = repository.findById(repaymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Repayment not found with id: " + repaymentId));
 
         Installment installment = installmentRepository.findById(repayment.getInstallmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Installment not found"));
 
+        OverpaymentWallet wallet = overpaymentWalletRepository.findByCustomerIdAndLoanId(repayment.getCustomerId(), repayment.getLoanId())
+                .orElseThrow(()->new ResourceNotFoundException("Loan have no overpayment wallet."));
+
+        LocalDate today = LocalDate.now();
+
+        repayment.getStatus().validateTransition(RepaymentStatus.REVERSED);
+
         BigDecimal penaltyReversed = repayment.getRepaymentApplication().getPenaltyApplied();
         BigDecimal feeReversed = repayment.getRepaymentApplication().getLoanFeeApplied();
         BigDecimal interestReversed = repayment.getRepaymentApplication().getInterestApplied();
         BigDecimal principalReversed = repayment.getRepaymentApplication().getPrincipalApplied();
+        BigDecimal excessAmount = repayment.getRepaymentApplication().getExcessAmount();
 
         installment.setPenaltyPaid(installment.getPenaltyPaid().subtract(penaltyReversed));
         installment.setLoanFeePaid(installment.getLoanFeePaid().subtract(feeReversed));
@@ -253,8 +271,14 @@ public class RepaymentService {
         installment.setPrincipalPaid(installment.getPrincipalPaid().subtract(principalReversed));
         installment.setTotalPaid(installment.getTotalPaid().subtract(penaltyReversed.add(feeReversed).add(interestReversed).add(principalReversed)));
 
-        if (installment.getTotalPaid().compareTo(installment.getTotalDue()) < 0) {
-            installment.setStatus(InstallmentStatus.PARTIAL);
+        if (excessAmount.compareTo(BigDecimal.ZERO) > 0 && wallet != null) {
+            wallet.setBalance(wallet.getBalance().subtract(excessAmount));
+        }
+
+        if (installment.getTotalPaid().equals(BigDecimal.ZERO) && installment.getDueDate().isBefore(today)) {
+            installment.setStatus(InstallmentStatus.OVERDUE);
+        } else if (installment.getTotalPaid().equals(BigDecimal.ZERO) && installment.getDueDate().isEqual(today)) {
+            installment.setStatus(InstallmentStatus.DUE);
         } else {
             installment.setStatus(InstallmentStatus.PENDING);
         }
@@ -262,7 +286,19 @@ public class RepaymentService {
         installmentRepository.save(installment);
 
         repayment.setStatus(RepaymentStatus.REVERSED);
-        repository.save(repayment);
+        Repayment reversedRepayment = repository.save(repayment);
+
+        Reversal reversal = Reversal.builder()
+                .repaymentId(reversedRepayment.getId())
+                .reason(request.getReason())
+                //BUG: Implement reversedBy
+                .reversedBy("USER")
+                //BUG: Implement status to change from PENDING to CONFIRMED, after being confirmed by manager.
+                // The repayment reversal action must be not applied to the repayment until is confirmed.
+                .status(ReversalStatus.CONFIRMED)
+                .build();
+
+        reversalRepository.save(reversal);
     }
 
 
@@ -276,4 +312,19 @@ public class RepaymentService {
                 .orElseThrow(()->new ResourceNotFoundException("Repayment not found!"));
         repository.deleteById(repayment.getId());
     }
+
+
 }
+//ToDo: Refund excess or reversed payments
+
+//ToDo: Manual Repayment Adjustment
+// - Adjust amounts
+// - Leave audit trail
+// - Require reason
+
+// ToDo: Ledger posting ( Kafka event) Each Repayment posts:
+//  Debit cash
+//  Credit loan principal
+//  Credit interest Income
+//  credit penalties
+//  Credit loan fees.

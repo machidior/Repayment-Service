@@ -1,6 +1,7 @@
 package com.machidior.Repayment_service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.machidior.Repayment_service.enums.InstallmentPenaltyStatus;
 import com.machidior.Repayment_service.enums.InstallmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,8 +22,8 @@ public class Installment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version
-    private Long version;
+//    @Version
+//    private Long version;
     private Integer installmentNumber;
     private LocalDate dueDate;
     private BigDecimal principalDue;
@@ -36,6 +37,7 @@ public class Installment {
     private BigDecimal totalPaid;
     private BigDecimal remainingBalance;
 
+    private InstallmentPenaltyStatus penaltyStatus;
     private BigDecimal penaltyAccrued;
     private BigDecimal penaltyPaid;
     @Enumerated(EnumType.STRING)

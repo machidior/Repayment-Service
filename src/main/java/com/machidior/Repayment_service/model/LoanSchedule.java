@@ -5,6 +5,7 @@ import com.machidior.Repayment_service.enums.LoanScheduleStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,7 +27,7 @@ public class LoanSchedule {
     @Enumerated(EnumType.STRING)
     private LoanProductType productType;
     private String customerId;
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime createdAt;
     private BigDecimal totalPrincipal;
     private BigDecimal totalInterest;
@@ -35,6 +36,8 @@ public class LoanSchedule {
     private Integer paidInstallments;
     @Enumerated(EnumType.STRING)
     private LoanScheduleStatus status;
+
+    private Boolean enablePenalty;
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
     private List<Installment> installments;

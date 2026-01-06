@@ -1,10 +1,8 @@
 package com.machidior.Repayment_service.model;
 
-import com.machidior.Repayment_service.enums.ReversalStatus;
+import com.machidior.Repayment_service.enums.RescheduleStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -15,16 +13,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Reversal {
+public class LoanReschedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long repaymentId;
+    private String loanId;
+    private LocalDateTime requestedDate;
+    private String requestedBy;
     private String reason;
-    private String reversedBy;
-    @CreatedDate
-    private LocalDateTime reversedDate;
+    private String newTenure;
+    private String newInstallmentAmount;
     @Enumerated(EnumType.STRING)
-    private ReversalStatus status;
+    private RescheduleStatus status;
 }
